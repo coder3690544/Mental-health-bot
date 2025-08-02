@@ -1,0 +1,79 @@
+"⚠️ Note: API keys have been removed for security reasons. Please add your own API keys to run this project."
+
+!pip install openai crewai gradio python-dotenv
+
+import os
+
+# Paste your key here temporarily
+os.environ["OPENAI_API_KEY"] =
+
+
+from crewai import Agent
+
+# Agent: Mood Analyzer
+mood_analyzer = Agent(
+role="Mood Analyzer",
+goal="Analyze emotional tone from user input",
+backstory="Expert at identifying emotions from short text inputs.",
+verbose=True
+)
+
+# Agent: Companion
+companion = Agent(
+role="Companion",
+goal="Offer an empathetic response",
+backstory="Kind AI that provides emotional support like a friend.",
+verbose=True
+)
+
+# Agent: Self-Care Recommender
+self_care = Agent(
+role="Self-Care Recommender",
+goal="Suggest practical self-care tips",
+backstory="AI therapist that knows many techniques for emotional wellbeing.",
+verbose=True
+)
+
+from crewai import Task
+
+def get_tasks(user_input):
+return [
+Task(
+description=f"Analyze this message to detect the mood: '{user_input}'",
+expected_output="Mood and brief reasoning.",
+agent=mood_analyzer
+),
+Task(
+description=f"Respond empathetically to this: '{user_input}'",
+expected_output="Friendly, kind response.",
+agent=companion
+),
+Task(
+description=f"Based on the user's mood from: '{user_input}', suggest 2-3 self-care activities.",
+expected_output="List of helpful wellness tips.",
+agent=self_care
+)
+]
+
+import gradio as gr
+from crewai import Crew
+
+def mental_health_bot(user_input):
+tasks = get_tasks(user_input)
+crew = Crew(
+agents=[mood_analyzer, companion, self_care],
+tasks=tasks,
+verbose=False
+)
+result = crew.kickoff()
+return result
+
+demo = gr.Interface(
+fn=mental_health_bot,
+inputs=gr.Textbox(label="Describe how you're feeling:"),
+outputs=gr.Textbox(label="AI Support Response"),
+title="🧠 Mental Health Support Bot",
+description="Type how you're feeling. This AI will detect your mood, respond empathetically, and offer self-care tips."
+)
+
+demo.launch(share=True) 
